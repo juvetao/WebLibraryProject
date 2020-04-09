@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <script defer th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    <script defer th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
+    <script defer th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.css}">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <meta charset="UTF-8">
+    <title>Books</title>
+</head>
+<body>
+<nav th:replace="navbar:: Navbar"></nav>
+<div class="container">
+    <!-- In this page, every one can visit and search for book or books with the whole title of book or keyword of the title-->
+    <h2>Search for a book/ books</h2>
+    <form th:object="${bookList}" th:action="@{/books}" method="get">
+        <input type="text" name="search" id="search" placeholder="Enter the book title" />
+        <input type="submit" value="Search">
+        <!--            After entering keyword, there is a book/ books whose title match(es) the keyword-->
+        <table  th:if="${message == null}" class="table">
+            <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Max loan days</th>
+            </tr>
+            </thead>
+            <tbody>
+            <br>If make the input empty and press the Search button, all the books will be shown
+            <tr  th:each="book: ${bookList}">
+                <td><span th:text="${book.title}"></span></td>
+                <td><span th:text="${book.maxLoanDays}"></span></td>
+                <td th:if="${book.isAvailable()}"><a class="btn btn-primary btn-sm" th:href="@{/create/loan/{id} (id=${book.bookId})}">Borrow</a></td>
+                <td th:if="${!book.isAvailable()}"><span>Not Available</span></td>
+            </tr>
+
+            </tbody>
+        </table>
+        <!--            If the keyword doesn't match, a message containing the keyword will be shown instead-->
+        <div th:unless="${message == null}">
+            <h4 class="alert" th:text="${message}"></h4>
+        </div>
+    </form>
+</div>
+</body>
+</html>
