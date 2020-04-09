@@ -17,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -103,7 +104,7 @@ public class AppUserControllerTest {
     }
 
 
-    //Expected 200 Actual 403
+    //OK!
     @Test
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
@@ -112,27 +113,29 @@ public class AppUserControllerTest {
                 .param("startDate", "2020-04-08")//String - LocalDate
                 .param("endDate", "2020-04-07")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
-                .param("bookId", "1"))
+                .param("bookId", "1")
+                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasErrors("form"))
-                .andExpect(model().attributeHasErrors("form", "endDate"));
+                .andExpect(model().attributeHasFieldErrors("form", "endDate"));
     }
 
-    //Expected 200 Actual 403
+    //OK!
     @Test
-//    @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
-    @WithAnonymousUser
+    @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
+//    @WithAnonymousUser
     public void wrongStartDateReturnError() throws Exception{
         mockMvc.perform(post("/create/loan/process")
                 .param("startDate", "2020-04-01")//String - LocalDate
                 .param("endDate", "2020-04-09")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
-                .param("bookId", "1"))
+                .param("bookId", "1")
+                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(model().attributeHasErrors("form"))
-                .andExpect(model().attributeHasErrors("form", "startDate"));
+                .andExpect(model().attributeHasFieldErrors("form", "startDate"));
     }
 
     //Expected 200 Actual 403
@@ -144,7 +147,8 @@ public class AppUserControllerTest {
                 .param("startDate", "2020-04-09")//String - LocalDate
                 .param("endDate", "2020-04-16")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
-                .param("bookId", "1"))
+                .param("bookId", "1")
+                .with(csrf()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(model().hasNoErrors());
