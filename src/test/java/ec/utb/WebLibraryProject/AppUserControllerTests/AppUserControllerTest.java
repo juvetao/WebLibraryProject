@@ -1,4 +1,6 @@
 package ec.utb.WebLibraryProject.AppUserControllerTests;
+import ec.utb.WebLibraryProject.entity.AppUser;
+import ec.utb.WebLibraryProject.entity.Book;
 import ec.utb.WebLibraryProject.entity.Loan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -108,7 +110,7 @@ public class AppUserControllerTest {
     @Test
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
-    public void wrongEndDateReturnError() throws Exception{
+    public void WrongEndDateReturnError() throws Exception{
         mockMvc.perform(post("/create/loan/process")
                 .param("startDate", "2020-04-08")//String - LocalDate
                 .param("endDate", "2020-04-07")
@@ -125,7 +127,7 @@ public class AppUserControllerTest {
     @Test
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
-    public void wrongStartDateReturnError() throws Exception{
+    public void WrongStartDateReturnError() throws Exception{
         mockMvc.perform(post("/create/loan/process")
                 .param("startDate", "2020-04-01")//String - LocalDate
                 .param("endDate", "2020-04-09")
@@ -138,11 +140,11 @@ public class AppUserControllerTest {
                 .andExpect(model().attributeHasFieldErrors("form", "startDate"));
     }
 
-    //Expected 200 Actual 403
+    //Works if expect 302
     @Test
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
-    public void postReturnNoError() throws Exception{
+    public void PostReturnNoError() throws Exception{
         mockMvc.perform(post("/create/loan/process")
                 .param("startDate", "2020-04-09")//String - LocalDate
                 .param("endDate", "2020-04-16")
@@ -150,15 +152,18 @@ public class AppUserControllerTest {
                 .param("bookId", "1")
                 .with(csrf()))
                 .andDo(print())
-                .andExpect(status().isOk())
+                .andExpect(status().isFound())
                 .andExpect(model().hasNoErrors());
     }
 
-    //java.lang.IllegalArgumentException
+    //javax.persistence.PersistenceException: org.hibernate.exception.ConstraintViolationException: could not execute statement
     @Test
-    @WithAnonymousUser
+    @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
     public void ReturnBookReturnSuccess() throws Exception{
-        em.persist(new Loan(LocalDate.parse("2020-04-08"), LocalDate.parse("2020-04-10")));
+        em.persist(new Loan(LocalDate.parse("2020-04-08"),
+                LocalDate.parse("2020-04-10"),
+                new AppUser("Benjamin","Boson","BenjaminEBoson@Gmail.com","1a1b1c1d", LocalDate.now()),
+                new Book(90, "War and Peace","George R.R. Martin")));
         mockMvc.perform(get("/loans/return/{id}", 1))
                 .andDo(print())
                 .andExpect(status().isFound())
