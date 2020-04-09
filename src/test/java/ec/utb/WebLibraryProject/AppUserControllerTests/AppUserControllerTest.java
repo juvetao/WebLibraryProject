@@ -1,4 +1,6 @@
 package ec.utb.WebLibraryProject.AppUserControllerTests;
+import ec.utb.WebLibraryProject.data.BookRepository;
+import ec.utb.WebLibraryProject.data.LoanRepository;
 import ec.utb.WebLibraryProject.entity.AppUser;
 import ec.utb.WebLibraryProject.entity.Book;
 import ec.utb.WebLibraryProject.entity.Loan;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -35,6 +38,10 @@ public class AppUserControllerTest {
 
     @Autowired
     private TestEntityManager em;
+
+    @Autowired
+    private BookRepository bookRepository;
+    private LoanRepository loanRepository;
 
     private MockMvc mockMvc;
 
@@ -162,7 +169,7 @@ public class AppUserControllerTest {
     @Test
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
-    public void PostReturnNoError() throws Exception{
+    public void PostReturnNoError_302() throws Exception{
         mockMvc.perform(post("/create/loan/process")
                 .param("startDate", "2020-04-09")//String - LocalDate
                 .param("endDate", "2020-04-16")
@@ -174,19 +181,21 @@ public class AppUserControllerTest {
                 .andExpect(model().hasNoErrors());
     }
 
-    //javax.persistence.PersistenceException: org.hibernate.exception.ConstraintViolationException: could not execute statement
     @Test
-    @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
-    public void ReturnBookReturnSuccess() throws Exception{
-        em.persist(new Loan(LocalDate.parse("2020-04-08"),
-                LocalDate.parse("2020-04-10"),
-                new AppUser("Benjamin","Boson","BenjaminEBoson@Gmail.com","1a1b1c1d", LocalDate.now()),
-                new Book(90, "War and Peace","George R.R. Martin")));
-        mockMvc.perform(get("/loans/return/{id}", 1))
+//    @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
+    @WithAnonymousUser
+    public void ReturnBookReturnSuccess_302() throws Exception{
+        Book testBook = bookRepository.findById(1).get();
+        Loan testLoan = new Loan(LocalDate.parse("2020-04-08"),
+                LocalDate.parse("2020-04-30"),
+                new AppUser("Cheng","Tao","cheng.tao86@gmail.com","1a1b1c1d", LocalDate.now()),
+                testBook);
+        em.persist(testLoan);
+        mockMvc.perform(get("/loans/return/{id}", "30"))// May be dynamic...the loanId every time has an increment of 1.
                 .andDo(print())
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/index"));
-        em.flush();
+//        em.flush();
     }
 
 }
