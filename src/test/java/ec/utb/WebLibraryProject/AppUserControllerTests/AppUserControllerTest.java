@@ -118,8 +118,9 @@ public class AppUserControllerTest {
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
     public void WrongEndDateReturnError() throws Exception{
+        LocalDate currentDate = LocalDate.now();
         mockMvc.perform(post("/create/loan/process")
-                .param("startDate", "2020-04-08")//String - LocalDate
+                .param("startDate", currentDate.toString())//String - LocalDate
                 .param("endDate", "2020-04-07")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
                 .param("bookId", "1")
@@ -199,7 +200,7 @@ public class AppUserControllerTest {
                 .andDo(print())
                 .andExpect(status().isFound())
                 .andExpect(redirectedUrl("/index"));
-//        em.flush();
+        em.flush();
     }
 
 }
