@@ -152,8 +152,9 @@ public class AppUserControllerTest {
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
     public void OverDueReturnError() throws Exception{
+        LocalDate currentDate = LocalDate.now();
         mockMvc.perform(post("/create/loan/process")
-                .param("startDate", "2020-04-09")//String - LocalDate
+                .param("startDate", currentDate.toString())//String - LocalDate
                 .param("endDate", "2020-08-09")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
                 .param("bookId", "1") // 90 days
@@ -170,8 +171,9 @@ public class AppUserControllerTest {
     @WithMockUser(username = "BenjaminEBoson@Gmail.com", authorities = { "ADMIN", "USER" })
 //    @WithAnonymousUser
     public void PostReturnNoError_302() throws Exception{
+        LocalDate currentDate = LocalDate.now();
         mockMvc.perform(post("/create/loan/process")
-                .param("startDate", "2020-04-09")//String - LocalDate
+                .param("startDate", currentDate.toString())//String - LocalDate
                 .param("endDate", "2020-04-16")
                 .param("appUserEmail", "BenjaminEBoson@Gmail.com")
                 .param("bookId", "1")
@@ -191,6 +193,8 @@ public class AppUserControllerTest {
                 new AppUser("Cheng","Tao","cheng.tao86@gmail.com","1a1b1c1d", LocalDate.now()),
                 testBook);
         em.persist(testLoan);
+//        int testLoanId = testLoan.getLoanId();
+//        System.out.println(testLoanId);
         mockMvc.perform(get("/loans/return/{id}", "30"))// May be dynamic...the loanId every time has an increment of 1.
                 .andDo(print())
                 .andExpect(status().isFound())
